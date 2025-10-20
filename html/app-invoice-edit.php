@@ -332,20 +332,20 @@
                           <div class="invoice-calculations">
                             <div class="d-flex justify-content-between mb-2">
                               <span class="w-px-100">Subtotal:</span>
-                              <span class="fw-medium text-heading">$1800</span>
+                              <span class="fw-medium text-heading"></span>
                             </div>
                             <div class="d-flex justify-content-between mb-2">
                               <span class="w-px-100">Discount:</span>
-                              <span class="fw-medium text-heading">$28</span>
+                              <span class="fw-medium text-heading"></span>
                             </div>
                             <div class="d-flex justify-content-between mb-2">
                               <span class="w-px-100">Tax:</span>
-                              <span class="fw-medium text-heading">21%</span>
+                              <span class="fw-medium text-heading"></span>
                             </div>
                             <hr class="my-2" />
                             <div class="d-flex justify-content-between">
                               <span class="w-px-100">Total:</span>
-                              <span class="fw-medium text-heading">$1690</span>
+                              <span class="fw-medium text-heading"></span>
                             </div>
                           </div>
                         </div>

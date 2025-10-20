@@ -295,7 +295,7 @@
                                     rows="2"
                                     placeholder="(Any extra details)"></textarea>
                                 </div>
-                                <div class="col-md-3 col-12 mb-md-0 mb-4">
+                                <div class="col-md-2 col-12 mb-md-0 mb-4">
                                   <p class="h6 repeater-title">Cost</p>
                                   <input
                                     type="text"
@@ -319,7 +319,7 @@
                                     min="1"
                                     max="50" />
                                 </div>
-                                <div class="col-md-1 col-12 pe-0 mt-8">
+                                <div class="col-md-2 col-12 pe-0 mt-8">
                                   <p class="h6 repeater-title">Price</p>
                                   <p class="mb-0 text-heading invoice-item-total-price"></p>
 
