@@ -1,0 +1,27 @@
+let me share the local storage variables (hope I got all lol)
+
+acceptPaymentsVia	["Bank Account"]
+altMomoAccountName
+altMomoNetwork
+altMomoNumber
+bankAccountNumber	49020239023
+bankName	African Bank
+cashInstructions	Pay full amount on delivery.
+clientNotesToggle	true
+companyAddress	120 Heather Way, Heaven
+companyContact	0240820320 / 027213123123
+dateDue	2025-10-30
+dateIssued	2025-10-10
+invoiceId	HCL-005
+invoiceItems	[{"detail":"Item 1","extra":"Description of 1","cost":"150","discount":"50","qty":"5"},{"detail":"Item 2","extra":"Description of 1","cost":"30","discount":"50","qty":"5"}]
+invoiceMsg	payment
+momoAccountName	Odugwu Ventures
+momoNetwork	MTN Mobile Money
+momoNumber	0540960480
+note	note
+paymentTermsToggle	true
+senderContact	0241399000
+senderEmail	odogwu@gmail.com
+senderLocation	Accra, Ghana
+senderName	Odogwu Ventures
+senderWebsite	https://topwebsite
