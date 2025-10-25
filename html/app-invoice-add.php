@@ -407,14 +407,14 @@
                 <div class="col-lg-3 col-12 invoice-actions">
                   <div class="card mb-6">
                     <div class="card-body">
-                      <button
-                        class="btn btn-primary d-grid w-100 mb-4"
-                        data-bs-toggle="offcanvas"
-                        data-bs-target="#sendInvoiceOffcanvas">
-                        <span class="d-flex align-items-center justify-content-center text-nowrap"
-                          ><i class="icon-base bx bx-paper-plane icon-xs me-2"></i>Send Invoice</span
-                        >
-                      </button>
+<!--                      <button-->
+<!--                        class="btn btn-primary d-grid w-100 mb-4"-->
+<!--                        data-bs-toggle="offcanvas"-->
+<!--                        data-bs-target="#sendInvoiceOffcanvas">-->
+<!--                        <span class="d-flex align-items-center justify-content-center text-nowrap"-->
+<!--                          ><i class="icon-base bx bx-paper-plane icon-xs me-2"></i>Send Invoice</span-->
+<!--                        >-->
+<!--                      </button>-->
                       <a href="./app-invoice-preview.php" class="btn btn-label-secondary d-grid w-100 mb-4">Preview</a>
                         <button type="button" class="btn btn-label-secondary d-grid w-100 mb-4" data-bs-toggle="modal" data-bs-target="#taxModal">
                             Add Tax Info
@@ -1358,9 +1358,11 @@ Dear Queen Consolidated,
 
                 document.getElementById('totalTaxRatePct').textContent = getCombinedTaxRate().toFixed(2);
 
+
                 const modal = bootstrap.Modal.getInstance(modalEl);
                 modal?.hide();
                 notify({ type: 'success', title: 'Tax info saved' });
+                updateInvoiceTotals();
             });
 
             // Render (defaults + customs + previous selections) every time the modal opens
@@ -1383,6 +1385,7 @@ Dear Queen Consolidated,
             if (totalTaxRatePct) {
                 const rate = getCombinedTaxRate();
                 totalTaxRatePct.textContent = `${rate.toFixed(2)}`;
+                updateInvoiceTotals();
             }
         });
     </script>

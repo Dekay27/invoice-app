@@ -28,7 +28,7 @@ function getCurrentCurrency() {
 // Totals calculator (currency-aware, with per-row calcs)
 function updateInvoiceTotals() {
     const currencyCode = getCurrentCurrency();
-    let total = 0, totalDiscount = 0;
+    let total = 0, totalDiscount = 0, fullTotal = 0;
 
     // Calc and format each row's total
     document.querySelectorAll('[data-repeater-item]').forEach(row => {
@@ -36,12 +36,13 @@ function updateInvoiceTotals() {
         const qty = parseFloat(row.querySelector('.invoice-item-qty')?.value) || 1;
         const disc = parseCurrency(row.querySelector('.discount')?.value);
         const rowTotal = (price * qty) - disc;
+        fullTotal += (price * qty);
         row.querySelector('.invoice-item-total-price').textContent = formatCurrency(currencyCode, rowTotal);
         total += rowTotal;
         totalDiscount += disc;
     });
 
-    const subtotal = total;
+    const subtotal = fullTotal;
     const taxPercent = parseFloat(document.querySelector('.invoice-tax-percent')?.textContent || "0");
     const taxAmount = (subtotal - totalDiscount) * (taxPercent / 100);
     const grandTotal = subtotal - totalDiscount + taxAmount;
@@ -118,6 +119,7 @@ function removeRow(e) {
     // Update totals after removal
     updateInvoiceTotals();
 }
+
 
 // Initialise everything
 document.addEventListener('DOMContentLoaded', () => {

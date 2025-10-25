@@ -694,103 +694,138 @@ Dear Queen Consolidated,
       });
   </script>
   <script>
-      // Direct WhatsApp Share
+      // WhatsApp Share Listener
       document.addEventListener('DOMContentLoaded', () => {
           const sendBtn = document.getElementById('sendViaWhatsApp');
-          if (!sendBtn) return;
+          if (!sendBtn) {
+              console.warn('WhatsApp share button not found.');
+              return;
+          }
 
           sendBtn.addEventListener('click', async () => {
-              // 1. Default message (pull from localStorage or hardcoded)
-              const defaultMsg = localStorage.getItem('invoiceMsg') || 'Please find the attached invoice. Review and let me know if you have questions.';
-              const subject = localStorage.getItem('invoiceId') || 'Invoice';
-              const message = `${defaultMsg}\n\nInvoice: ${subject}`;
-
-              // 2. Generate PDF blob
-              let pdfBlob;
               try {
-                  pdfBlob = await generateInvoicePdf();
-              } catch (err) {
-                  console.error('PDF Gen Error:', err);
-                  alert('Failed to generate PDF—check console.');
-                  return;
-              }
-
-              const pdfName = `invoice-${localStorage.getItem('invoiceId') || 'demo'}.pdf`;
-              const file = new File([pdfBlob], pdfName, { type: 'application/pdf' });
-              const pdfUrl = URL.createObjectURL(pdfBlob);
-
-              // 3. Share PDF (user picks WhatsApp + recipient)
-              const shareData = {
-                  title: `Invoice ${subject}`,
-                  text: message,
-                  files: [file]
-              };
-
-              if (navigator.canShare && navigator.canShare(shareData)) {
-                  try {
-                      await navigator.share(shareData);
-                  } catch (err) {
-                      if (err.name !== 'AbortError') {
-                          console.warn('Share failed:', err);
-                          fallbackShare(pdfUrl, message);
-                      }
+                  // Generate the A4 PDF (using your original generateInvoicePdf)
+                  if (typeof html2canvas === 'undefined' || typeof window.jspdf === 'undefined') {
+                      throw new Error('PDF libraries not loaded.');
                   }
-              } else {
-                  fallbackShare(pdfUrl, message);
-              }
 
-              // Cleanup
-              URL.revokeObjectURL(pdfUrl);
+                  // Temporarily hide icons for clean PDF
+                  const icons = $('.icon-base');
+                  icons.addClass('d-print-none');
+
+                  const element = $('.invoice-preview-card')[0];
+                  const canvas = await html2canvas(element, { scale: 2, useCORS: true });
+                  const imgData = canvas.toDataURL('image/png');
+                  const pdf = new window.jspdf.jsPDF('p', 'mm', 'a4');
+                  const imgWidth = 210; // A4 width in mm
+                  const imgHeight = (canvas.height * imgWidth) / canvas.width;
+                  let heightLeft = imgHeight;
+                  let position = 0;
+
+                  pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+                  heightLeft -= 297; // A4 height in mm
+
+                  while (heightLeft >= 0) {
+                      position = heightLeft - imgHeight;
+                      pdf.addPage();
+                      pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+                      heightLeft -= 297;
+                  }
+
+                  icons.removeClass('d-print-none');
+
+                  // Convert PDF to blob
+                  const pdfBlob = pdf.output('blob');
+
+                  // Create a temporary URL for the PDF
+                  const pdfUrl = URL.createObjectURL(pdfBlob);
+
+                  // Download the PDF automatically
+                  const a = document.createElement('a');
+                  a.href = pdfUrl;
+                  let filename = localStorage.getItem('invoiceId') || ${Date.now()};
+                  a.download = `invoice-${filename}.pdf`; // Unique filename
+                  document.body.appendChild(a);
+                  a.click();
+                  document.body.removeChild(a);
+
+                  // Open WhatsApp (app or web) with no pre-filled message or phone number
+                  const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+                  const waUrl = isMobile ? 'whatsapp://send' : 'https://web.whatsapp.com/send';
+                  window.open(waUrl, '_blank');
+
+                  // Clean up the temporary URL after a delay
+                  setTimeout(() => URL.revokeObjectURL(pdfUrl), 30000); // Revoke after 30 seconds
+
+              } catch (error) {
+                  console.error('Error generating or sharing PDF:', error);
+                  alert('Failed to generate or share PDF. Check console for details.');
+              }
           });
       });
 
-      // PDF Generator (unchanged—html2canvas for screenshot-style)
-      async function generateInvoicePdf() {
-          if (typeof html2canvas === 'undefined' || typeof window.jspdf === 'undefined') {
-              throw new Error('PDF libs not loaded.');
-          }
+      // Generate A4 PDF and Open WhatsApp for Manual Attachment
+      async function generateAndShareInvoicePdf() {
+          try {
+              // Generate the A4 PDF (unchanged from your original function)
+              if (typeof html2canvas === 'undefined' || typeof window.jspdf === 'undefined') {
+                  throw new Error('PDF libraries not loaded.');
+              }
 
-          // Temp hide icons for clean PDF
-          const icons = $('.icon-base');
-          icons.addClass('d-print-none');
+              // Temporarily hide icons for clean PDF
+              const icons = $('.icon-base');
+              icons.addClass('d-print-none');
 
-          const element = $('.invoice-preview-card')[0]; // Use preview card; swap to add page's if needed
-          const canvas = await html2canvas(element, { scale: 2, useCORS: true });
-          const imgData = canvas.toDataURL('image/png');
-          const pdf = new window.jspdf.jsPDF('p', 'mm', 'a4');
-          const imgWidth = 210;
-          const imgHeight = (canvas.height * imgWidth) / canvas.width;
-          let heightLeft = imgHeight;
-          let position = 0;
+              const element = $('.invoice-preview-card')[0]; // Use preview card
+              const canvas = await html2canvas(element, { scale: 2, useCORS: true });
+              const imgData = canvas.toDataURL('image/png');
+              const pdf = new window.jspdf.jsPDF('p', 'mm', 'a4');
+              const imgWidth = 210; // A4 width in mm
+              const imgHeight = (canvas.height * imgWidth) / canvas.width;
+              let heightLeft = imgHeight;
+              let position = 0;
 
-          pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
-          heightLeft -= 297;
-
-          while (heightLeft >= 0) {
-              position = heightLeft - imgHeight;
-              pdf.addPage();
               pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
-              heightLeft -= 297;
+              heightLeft -= 297; // A4 height in mm
+
+              while (heightLeft >= 0) {
+                  position = heightLeft - imgHeight;
+                  pdf.addPage();
+                  pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+                  heightLeft -= 297;
+              }
+
+              icons.removeClass('d-print-none');
+
+              // Convert PDF to blob
+              const pdfBlob = pdf.output('blob');
+
+              // Create a temporary URL for the PDF
+              const pdfUrl = URL.createObjectURL(pdfBlob);
+
+              // Download the PDF automatically
+              const a = document.createElement('a');
+              a.href = pdfUrl;
+              a.download = `invoice-${Date.now()}.pdf`;
+              document.body.appendChild(a);
+              a.click();
+              document.body.removeChild(a);
+
+              // Detect if the user is on a mobile device
+              const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+              const waUrl = isMobile ? 'whatsapp://send' : 'https://web.whatsapp.com/send';
+
+              // Open WhatsApp (app or web) with no pre-filled message or phone number
+              window.open(waUrl, '_blank');
+
+              // Clean up the temporary URL
+              setTimeout(() => URL.revokeObjectURL(pdfUrl), 30000); // Revoke after 30 seconds
+
+              return { success: true, message: 'PDF generated and WhatsApp opened.' };
+          } catch (error) {
+              console.error('Error generating or sharing PDF:', error);
+              return { success: false, message: 'Failed to generate or share PDF.' };
           }
-
-          icons.removeClass('d-print-none');
-
-          return pdf.output('blob');
-      }
-
-      // Fallback: Download PDF + Open WhatsApp Web
-      function fallbackShare(pdfUrl, message) {
-          // Auto-download PDF
-          const a = document.createElement('a');
-          a.href = pdfUrl;
-          a.download = pdfUrl.split('/').pop();
-          document.body.appendChild(a);
-          a.click();
-          document.body.removeChild(a);
-
-          // Open WhatsApp Web with pre-filled message (user attaches the downloaded PDF)
-          const waMessage = encodeURIComponent(message);
-          window.open(`https://web.whatsapp.com/send?text=${waMessage}`, '_blank');
       }
   </script>
 
