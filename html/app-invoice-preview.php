@@ -661,9 +661,11 @@ Dear Queen Consolidated,
             }
         });
     </script>
+
+    /*
   <script>
       // Simple export button
-      // Simple export button (now with error handling)
+      /*
       $('#exportPdf').on('click', function() {
           if (typeof html2canvas === 'undefined' || typeof window.jspdf === 'undefined') {
               alert('PDF libraries not loaded—check console.');
@@ -692,8 +694,10 @@ Dear Queen Consolidated,
               pdf.save(`invoice-${localStorage.getItem('invoiceId') || 'demo'}.pdf`);
           }).catch(err => console.error('PDF Export Error:', err));
       });
+      */
   </script>
   <script>
+      /*
       // WhatsApp Share Listener
       document.addEventListener('DOMContentLoaded', () => {
           const sendBtn = document.getElementById('sendViaWhatsApp');
@@ -827,13 +831,156 @@ Dear Queen Consolidated,
               return { success: false, message: 'Failed to generate or share PDF.' };
           }
       }
+
+      */
   </script>
 
 
+  <script>
+      // New download script
+      // ------------------------------
+      // PDF Generation and WhatsApp Sharing
+      // ------------------------------
+      document.addEventListener('DOMContentLoaded', () => {
+          const generatePdf = async () => {
+              if (typeof html2canvas === 'undefined' || typeof window.jspdf === 'undefined') {
+                  throw new Error('PDF libraries not loaded.');
+              }
+
+              const element = document.querySelector('.invoice-preview-card');
+              if (!element) throw new Error('Invoice preview container not found.');
+
+              // Store original styles
+              const originalStyle = element.getAttribute('style') || '';
+              const originalClasses = element.className;
+
+              // Apply temporary A4-optimized styles
+              element.className = `${originalClasses} invoice-print-temp`;
+              element.style.width = '210mm';
+              element.style.minHeight = '297mm';
+              element.style.padding = '20mm';
+              element.style.boxShadow = 'none';
+              element.style.borderRadius = '0';
+              element.style.background = '#fff';
+              element.style.boxSizing = 'border-box';
+
+              // Normalize font sizes and hide non-essential elements
+              const tempStyle = document.createElement('style');
+              tempStyle.textContent = `
+      .invoice-print-temp * {
+        font-size: 12px !important;
+        line-height: 1.5 !important;
+      }
+      .invoice-print-temp h5, .invoice-print-temp h6 {
+        font-size: 14px !important;
+      }
+      .invoice-print-temp .card-body {
+        padding: 20mm !important;
+      }
+      .invoice-print-temp .icon-base {
+        display: none !important;
+      }
+      .invoice-print-temp .table-responsive {
+        overflow: visible !important;
+      }
+    `;
+              document.head.appendChild(tempStyle);
+
+              // Render canvas
+              const canvas = await html2canvas(element, {
+                  scale: 1.5, // Reduced scale for clarity without oversizing
+                  useCORS: true,
+                  width: 794, // A4 width in pixels at 96 DPI
+                  height: 1123 // A4 height in pixels at 96 DPI
+              });
+
+              // Restore original styles
+              element.className = originalClasses;
+              element.setAttribute('style', originalStyle);
+              document.head.removeChild(tempStyle);
+
+              // Generate PDF
+              const pdf = new window.jspdf.jsPDF('p', 'mm', 'a4');
+              const imgData = canvas.toDataURL('image/png');
+              const imgWidth = 210;
+              const pageHeight = 297;
+              const imgHeight = (canvas.height * imgWidth) / canvas.width;
+              let heightLeft = imgHeight;
+              let position = 0;
+
+              pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+              heightLeft -= pageHeight;
+
+              while (heightLeft >= 0) {
+                  position = heightLeft - imgHeight;
+                  pdf.addPage();
+                  pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+                  heightLeft -= pageHeight;
+              }
+
+              return pdf.output('blob');
+          };
+
+          // Export PDF Button
+          const exportBtn = document.getElementById('exportPdf');
+          if (exportBtn) {
+              exportBtn.addEventListener('click', async () => {
+                  try {
+                      exportBtn.disabled = true;
+                      exportBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Downloading...';
+                      const pdfBlob = await generatePdf();
+                      const pdfUrl = URL.createObjectURL(pdfBlob);
+                      const a = document.createElement('a');
+                      a.href = pdfUrl;
+                      a.download = `invoice-${localStorage.getItem('invoiceId') || 'demo'}.pdf`;
+                      document.body.appendChild(a);
+                      a.click();
+                      document.body.removeChild(a);
+                      setTimeout(() => URL.revokeObjectURL(pdfUrl), 30000);
+                  } catch (err) {
+                      console.error('PDF Export Error:', err);
+                      alert('Failed to generate PDF. Check console for details.');
+                  } finally {
+                      exportBtn.disabled = false;
+                      exportBtn.innerHTML = '<span class="d-flex align-items-center justify-content-center text-nowrap"><i class="icon-base bx bx-bxs-down-arrow-circle icon-sm me-2"></i>Download Invoice</span>';
+                  }
+              });
+          }
+
+          // WhatsApp Share Button
+          const sendBtn = document.getElementById('sendViaWhatsApp');
+          if (sendBtn) {
+              sendBtn.addEventListener('click', async () => {
+                  try {
+                      sendBtn.disabled = true;
+                      sendBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Sending...';
+                      const pdfBlob = await generatePdf();
+                      const pdfUrl = URL.createObjectURL(pdfBlob);
+                      const a = document.createElement('a');
+                      a.href = pdfUrl;
+                      a.download = `invoice-${localStorage.getItem('invoiceId') || 'demo'}.pdf`;
+                      document.body.appendChild(a);
+                      a.click();
+                      document.body.removeChild(a);
+
+                      const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+                      const waUrl = isMobile ? 'whatsapp://send' : 'https://web.whatsapp.com/send';
+                      window.open(waUrl, '_blank');
+
+                      setTimeout(() => URL.revokeObjectURL(pdfUrl), 30000);
+                  } catch (err) {
+                      console.error('Error generating or sharing PDF:', err);
+                      alert('Failed to generate or share PDF. Check console for details.');
+                  } finally {
+                      sendBtn.disabled = false;
+                      sendBtn.innerHTML = '<span class="d-flex align-items-center justify-content-center text-nowrap"><i class="icon-base bx bx-paper-plane icon-sm me-2"></i>Send via WhatsApp</span>';
+                  }
+              });
+          }
+      });
 
 
-
-
+  </script>
 
   </body>
 </html>
